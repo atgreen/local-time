@@ -1184,7 +1184,11 @@ elements."
     (values sec (* millis 1000000)))
   #+(and lispworks (or linux darwin))
   (lispworks-gettimeofday)
-  #-(or allegro cmu sbcl abcl ccl (and lispworks (or linux darwin)))
+  #+egcl
+  (multiple-value-bind (seconds nanoseconds) (egcl-ext:get-precise-time)
+    (values (- seconds #.(encode-universal-time 0 0 0 1 1 1970 0))
+            nanoseconds))
+  #-(or allegro cmu sbcl abcl ccl egcl (and lispworks (or linux darwin)))
   (values (- (get-universal-time)
              ;; CL's get-universal-time uses an epoch of 1/1/1900, so adjust the result to the Unix epoch
              #.(encode-universal-time 0 0 0 1 1 1970 0))
